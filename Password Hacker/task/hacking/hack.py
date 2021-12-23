@@ -3,6 +3,7 @@ import sys
 import socket
 import itertools
 import string
+import requests
 
 
 def establish_connection(ip_address: str, port: int):
@@ -12,10 +13,18 @@ def establish_connection(ip_address: str, port: int):
     return sock
 
 
+def get_password_list():
+    url = 'https://stepik.org/media/attachments/lesson/255258/passwords.txt'
+    with requests.get(url) as response:
+        password_list = response.content.decode('utf-8').split('\r\n')
+    return password_list
+
+
 def generate_password():
-    alphabet = list(string.ascii_lowercase) + list(string.digits)
-    for i in range(1, 256):
-        for password in itertools.product(alphabet, repeat=i):
+    password_list = get_password_list()
+    for item in password_list:
+        generator = ([letter.lower(), letter.upper()] for letter in item)
+        for password in list(map(lambda x: ''.join(x), itertools.product(*generator))):
             yield password
 
 
